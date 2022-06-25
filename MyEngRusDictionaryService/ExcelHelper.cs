@@ -13,17 +13,11 @@ namespace MyEngRusDictionaryService
     {
         private Application _excel;
         private Workbook _workbook;
-        private Worksheet _worksheet;
-
-        private string pathToFile = @"B:\Eng.xlsx";
-
+        //private Worksheet _worksheet;
         private List<string?> engWords = new List<string?>();
         private List<string?> rusWords = new List<string?>();
 
-        public string PathToFile
-        {
-            get { return pathToFile; }
-        }
+        public string PathToFile { get; } = @"B:\Eng.xlsx";
 
         public List<string?> EngWords
         {
@@ -45,7 +39,7 @@ namespace MyEngRusDictionaryService
             {
                 if (File.Exists(filePath))
                 {
-                    _workbook = _excel.Workbooks.Open(pathToFile, 0, false, 5, "", "", false, 
+                    _workbook = _excel.Workbooks.Open(PathToFile, 0, false, 5, "", "", false, 
                         XlPlatform.xlWindows, "", true, false, 0, true, false, false);
                     Worksheet _worksheet;
                     _worksheet = (Worksheet)_workbook.Sheets[1];
@@ -60,7 +54,6 @@ namespace MyEngRusDictionaryService
                     column = _worksheet.UsedRange.Columns[numCol];
                     System.Array rusvalues = (System.Array)column.Cells.Value2;
                     rusWords = rusvalues.OfType<object>().Select(o => Convert.ToString(o)).ToList();
-                    //_workbook.Close(false);
                 }
                 else throw new Exception("The file does not exist!");
 
@@ -82,7 +75,6 @@ namespace MyEngRusDictionaryService
                 engWords.Add(engWord);
                 rusWords.Add(rusWord);
                 _workbook.Save();
-                //_workbook.Close(false);
 
                 return true;
             }

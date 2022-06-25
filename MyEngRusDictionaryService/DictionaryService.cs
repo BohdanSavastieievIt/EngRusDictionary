@@ -10,10 +10,10 @@ namespace MyEngRusDictionaryService
     class DictionaryService
     {
         private readonly ExcelHelper helper;
-        private Random random;
         public DictionaryService() 
         {
             helper = new ExcelHelper();
+            
         }
         public void StartProgram()
         {
@@ -38,7 +38,7 @@ namespace MyEngRusDictionaryService
             Console.WriteLine("0. Enter '0' to quit the program");
             Console.WriteLine();
             
-            var isCorrect = Int32.TryParse(Console.ReadLine(), out int choice);
+            Int32.TryParse(Console.ReadLine(), out int choice);
             Console.WriteLine();
 
             switch (choice){
@@ -82,7 +82,7 @@ namespace MyEngRusDictionaryService
             string? rusWord = Console.ReadLine();
             Console.ForegroundColor = ConsoleColor.Red;
 
-            if (engWord.Length > 2 && rusWord.Length > 2)
+            if (engWord?.Length > 2 && rusWord?.Length > 2)
             {
                 if (helper.Add(engWord, rusWord))
                 {
@@ -126,63 +126,80 @@ namespace MyEngRusDictionaryService
 
         private void Test(int lang)
         {
-            int lang2 = lang == 0 ? 1 : 0;
+            Random random = new Random();
             int length = helper.EngWords.Count;
-            string [,] allWords = new string[length, 2];
-            for(int i = 0; i < length; i++)
-            {
-                allWords[i, 0] = helper.EngWords[i];
-                allWords[i, 1] = helper.RusWords[i];
-            }
-
-            int count = 0;
+            var words = new List<string?>();
+            var testWords = new List<string?>();
             var mistakes = new List<string?>();
             var corrections = new List<string?>();
 
-            random = new Random();
-
-            Console.ForegroundColor = ConsoleColor.DarkBlue;
-            Console.WriteLine("How many words the test should include?");
-            var isCorrect = Int32.TryParse(Console.ReadLine(), out int amount);
-            Console.WriteLine();
-            if (isCorrect)
+            if (lang == 0)
             {
-                if (amount > length) amount = length;
-                string[,] testWords = new string[amount, 2];
-                Array.Copy(allWords, (length - amount) * 2, testWords, 0, amount * 2);
-
-                for (int i = amount - 1; i >= 1; i--)
-                {
-                    int j = random.Next(i + 1);
-                    var temp = testWords[j, 0];
-                    testWords[j, 0] = testWords[i, 0];
-                    testWords[i, 0] = temp;
-                    temp = testWords[j, 1];
-                    testWords[j, 1] = testWords[i, 1];
-                    testWords[i, 1] = temp;
-                }
-
-                for (int i = 0; i < amount; i++)
-                {
-                    Console.WriteLine($" {testWords[i, lang]}");
-                    Console.SetCursorPosition(1, Console.GetCursorPosition().Top);
-                    string? word = Console.ReadLine();
-                    if (testWords[i, lang2].ToLower().Contains(word.ToLower()))
-                    {
-                        count++;
-                    }
-                    else
-                    {
-                        mistakes.Add(testWords[i, lang]);
-                        corrections.Add(testWords[i, lang2]);
-                    }
-                }
+                words.AddRange(helper.EngWords);
+                words.AddRange(helper.RusWords);
             }
             else
+            {
+                words.AddRange(helper.RusWords);
+                words.AddRange(helper.EngWords);
+            }
+
+
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+            Console.WriteLine("1. Choose from latest words.\n2. Choose from all words.");
+
+            Int32.TryParse(Console.ReadLine(), out int noveltySelector);
+            if (noveltySelector != 1 && noveltySelector != 2)
             {
                 Console.WriteLine("Incorrect!\n");
                 Test(lang);
             }
+            Console.WriteLine("How many words the test should include?");
+            Int32.TryParse(Console.ReadLine(), out int amount);
+            if (amount < 1)
+            {
+                Console.WriteLine("Incorrect!\n");
+                Test(lang);
+            }
+            Console.WriteLine();
+
+            if (amount > length) amount = length;
+        
+            if (noveltySelector == 1)
+            {
+                testWords.AddRange(words.Skip(length - amount).Take(amount));
+            }
+            else
+            {
+                testWords.AddRange(words.Take(length));
+            }
+            testWords = testWords.OrderBy(x => random.Next()).ToList();
+            int tempCount = testWords.Count;
+            for (int i = 0; i < tempCount; i++)
+            {
+                testWords.Add(words[words.IndexOf(testWords[i]) + length]);
+            }
+
+
+            int count = 0;
+            for (int i = 0; i < amount; i++)
+            {
+                Console.WriteLine($" {testWords[i]}");
+     
+                
+                Console.SetCursorPosition(1, Console.GetCursorPosition().Top);
+                string? word = Console.ReadLine();
+                if (word.Length > 2 && testWords[i + amount].ToLower().Contains(word.ToLower()))
+                {
+                    count++;
+                }
+                else
+                {
+                    mistakes.Add(testWords[i]);
+                    corrections.Add(testWords[i + amount]);
+                }
+            }
+
 
             Console.BackgroundColor = ConsoleColor.Red;
             Console.ForegroundColor = ConsoleColor.White;
