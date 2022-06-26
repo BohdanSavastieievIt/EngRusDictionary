@@ -12,7 +12,7 @@ namespace MyEngRusDictionaryService
     class ExcelHelper : IDisposable
     {
         private Application _excel;
-        private Workbook? _workbook;
+        private Workbook _workbook;
         private List<string?> engWords = new List<string?>();
         private List<string?> rusWords = new List<string?>();
         private List<int> correctResults = new List<int>();
@@ -132,10 +132,11 @@ namespace MyEngRusDictionaryService
                 for (int i = 0; i < isWordInTest.Count; i++)
                 {
                     _excel.ActiveSheet.Cells[isWordInTest[i] + 1, 4].Value2 += 1;
-                    testAttempts[isCorrect[i]] += 1;
+                    testAttempts[isWordInTest[i]] += 1;
+
                     _excel.ActiveSheet.Cells[isWordInTest[i] + 1, 5].Value2 = 
                         _excel.ActiveSheet.Cells[isWordInTest[i] + 1, 3].Value2 / _excel.ActiveSheet.Cells[isWordInTest[i] + 1, 4].Value2;
-                    scores[i] = (double)correctResults[i] / testAttempts[i];
+                    scores[isWordInTest[i]] = (double)correctResults[isWordInTest[i]] / testAttempts[isWordInTest[i]];
 
                 }
                 _workbook.Save();

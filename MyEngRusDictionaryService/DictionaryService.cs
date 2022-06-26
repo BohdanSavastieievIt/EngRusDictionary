@@ -134,7 +134,7 @@ namespace MyEngRusDictionaryService
             {
                 dict.Add(i, new (helper.EngWords[i], helper.RusWords[i], helper.CorrectResults[i], helper.TestAttempts[i], helper.Scores[i]));
             }
-            var sortedList = dict.OrderBy(x => x.Value.Item5).ToList();
+            var sortedList = dict.OrderBy(x => x.Value.Item5).ThenByDescending(x => x.Value.Item4).ToList();
 
             Console.ForegroundColor = ConsoleColor.DarkBlue;
             Console.WriteLine("   English                  Russian                              Total Result\n");
