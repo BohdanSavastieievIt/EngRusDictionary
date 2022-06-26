@@ -35,6 +35,7 @@ namespace MyEngRusDictionaryService
             Console.WriteLine("2. Enter '2' to take the 'From Eng to Rus' test");
             Console.WriteLine("3. Enter '3' to take the 'From Rus to Eng' test");
             Console.WriteLine("4. Enter '4' to add the word to the dictionary");
+            Console.WriteLine("5. Enter '5' to see the dictionary in order of test results");
             Console.WriteLine("0. Enter '0' to quit the program");
             Console.WriteLine();
             
@@ -56,6 +57,10 @@ namespace MyEngRusDictionaryService
                     break;
                 case 4:
                     AddWord();
+                    Menu();
+                    break;
+                case 5:
+                    ShowResultsOrder();
                     Menu();
                     break;
                 case 0:
@@ -122,16 +127,41 @@ namespace MyEngRusDictionaryService
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
         }
 
+        private void ShowResultsOrder()
+        {            
+            var dict = new Dictionary<int, Tuple<string?, string?, int, int, double>>();
+            for(int i = 0; i < helper.EngWords.Count; i++)
+            {
+                dict.Add(i, new (helper.EngWords[i], helper.RusWords[i], helper.CorrectResults[i], helper.TestAttempts[i], helper.Scores[i]));
+            }
+            var sortedList = dict.OrderBy(x => x.Value.Item5).ToList();
 
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+            Console.WriteLine("   English                  Russian                              Total Result\n");
+            for (int i = 0; i < sortedList.Count; i++)
+            {
+                string eng = $"{i + 1}. {sortedList[i].Value.Item1}";
+                Console.WriteLine($"{eng,-25}{sortedList[i].Value.Item2,-40}{sortedList[i].Value.Item5 * 100}% " +
+                    $"({sortedList[i].Value.Item3} out of {sortedList[i].Value.Item4})", Color.PowderBlue);
+            }
+
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+        }
 
         private void Test(int lang)
         {
+            //Creating variables, filling some data
+            #region
             Random random = new Random();
             int length = helper.EngWords.Count;
             var words = new List<string?>();
             var testWords = new List<string?>();
             var mistakes = new List<string?>();
+            var wrongAnswers = new List<string?>();
             var corrections = new List<string?>();
+            var indexesOfWordsInTest = new List<int>();
 
             if (lang == 0)
             {
@@ -143,8 +173,10 @@ namespace MyEngRusDictionaryService
                 words.AddRange(helper.RusWords);
                 words.AddRange(helper.EngWords);
             }
+            #endregion
 
-
+            //Console interface with user
+            #region
             Console.ForegroundColor = ConsoleColor.DarkBlue;
             Console.WriteLine("1. Choose from latest words.\n2. Choose from all words.");
 
@@ -164,29 +196,39 @@ namespace MyEngRusDictionaryService
             Console.WriteLine();
 
             if (amount > length) amount = length;
-        
+            #endregion
+
+            //Forming the list of test words
+            #region
+            
             if (noveltySelector == 1)
             {
                 testWords.AddRange(words.Skip(length - amount).Take(amount));
+                testWords = testWords.OrderBy(x => random.Next()).ToList();
             }
             else
             {
                 testWords.AddRange(words.Take(length));
+                testWords = testWords.OrderBy(x => random.Next()).Take(amount).ToList();
             }
-            testWords = testWords.OrderBy(x => random.Next()).ToList();
+            foreach (var word in testWords)
+            {
+                indexesOfWordsInTest.Add(words.IndexOf(word));
+            }
+            var indexesOfCorrectWords = indexesOfWordsInTest.ToList();
             int tempCount = testWords.Count;
             for (int i = 0; i < tempCount; i++)
             {
-                testWords.Add(words[words.IndexOf(testWords[i]) + length]);
+                testWords.Add(words[indexesOfWordsInTest[i] + length]);
             }
+            #endregion
 
-
+            //Test and updating test results in Excel file
+            #region
             int count = 0;
             for (int i = 0; i < amount; i++)
             {
                 Console.WriteLine($" {testWords[i]}");
-     
-                
                 Console.SetCursorPosition(1, Console.GetCursorPosition().Top);
                 string? word = Console.ReadLine();
                 if (word.Length > 2 && testWords[i + amount].ToLower().Contains(word.ToLower()))
@@ -196,23 +238,31 @@ namespace MyEngRusDictionaryService
                 else
                 {
                     mistakes.Add(testWords[i]);
+                    wrongAnswers.Add(word);
                     corrections.Add(testWords[i + amount]);
+                    indexesOfCorrectWords.Remove(indexesOfWordsInTest[i]);
                 }
             }
+            helper.WordsInTestUpdate(indexesOfWordsInTest, indexesOfCorrectWords);
+            #endregion
 
-
+            //Console display of results
+            #region 
             Console.BackgroundColor = ConsoleColor.Red;
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($"\nYour result is {count} out of {amount}\nIt is {(double)count / amount * 100} %\n" +
-                $"You made mistakes in words:\n");
+            Console.WriteLine($"\nYour result is {count} out of {amount}\nIt is {(double)count / amount * 100} %\n"
+                + $"You made mistakes in words:\n"
+                + "   Word                       Correct translation              Your answer");
+            Console.ForegroundColor = ConsoleColor.Yellow;
             for (int i = 0; i < mistakes.Count; i++)
             {
                 string first = $"{i + 1}. {mistakes[i]}";
-                Console.WriteLine($"{first,-25}{corrections[i]}");
+                Console.WriteLine($"{first,-30}{corrections[i],-33}{wrongAnswers[i]}");
             }
             Console.BackgroundColor = ConsoleColor.Cyan;
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.WriteLine();
+            #endregion
         }
     }
 }
