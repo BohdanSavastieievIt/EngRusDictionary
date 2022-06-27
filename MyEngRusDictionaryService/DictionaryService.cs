@@ -134,14 +134,14 @@ namespace MyEngRusDictionaryService
             {
                 dict.Add(i, new (helper.EngWords[i], helper.RusWords[i], helper.CorrectResults[i], helper.TestAttempts[i], helper.Scores[i]));
             }
-            var sortedList = dict.OrderBy(x => x.Value.Item5).ThenByDescending(x => x.Value.Item4).ToList();
+            var sortedList = dict.OrderByDescending(x => x.Value.Item5).ThenByDescending(x => x.Value.Item4).ToList();
 
             Console.ForegroundColor = ConsoleColor.DarkBlue;
             Console.WriteLine("   English                  Russian                              Total Result\n");
             for (int i = 0; i < sortedList.Count; i++)
             {
                 string eng = $"{i + 1}. {sortedList[i].Value.Item1}";
-                Console.WriteLine($"{eng,-25}{sortedList[i].Value.Item2,-40}{sortedList[i].Value.Item5 * 100}% " +
+                Console.WriteLine($"{eng,-25}{sortedList[i].Value.Item2,-40}{String.Format("{0:0.##}", sortedList[i].Value.Item5 * 100)}% " +
                     $"({sortedList[i].Value.Item3} out of {sortedList[i].Value.Item4})", Color.PowderBlue);
             }
 
@@ -243,7 +243,6 @@ namespace MyEngRusDictionaryService
                     indexesOfCorrectWords.Remove(indexesOfWordsInTest[i]);
                 }
             }
-            helper.WordsInTestUpdate(indexesOfWordsInTest, indexesOfCorrectWords);
             #endregion
 
             //Console display of results
@@ -263,6 +262,26 @@ namespace MyEngRusDictionaryService
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.WriteLine();
             #endregion
+
+
+            Console.BackgroundColor = ConsoleColor.Cyan;
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+            Console.WriteLine("Enter the numbers of words that you treat as correct ones. To escape enter 0.");
+            var correctionsOfWrong = new List<int>();
+            int temp;
+            do
+            {
+                Int32.TryParse(Console.ReadLine(), out temp);
+                if (temp != 0 && temp <= mistakes.Count && !correctionsOfWrong.Contains(temp))
+                {
+                    indexesOfCorrectWords.Add(words.IndexOf(mistakes[temp - 1]));
+                    correctionsOfWrong.Add(temp);
+                    Console.WriteLine("Success!");
+                }
+            }
+            while (temp != 0);
+
+            helper.WordsInTestUpdate(indexesOfWordsInTest, indexesOfCorrectWords);
         }
     }
 }
