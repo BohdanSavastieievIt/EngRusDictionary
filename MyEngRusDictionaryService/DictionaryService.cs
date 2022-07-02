@@ -19,9 +19,6 @@ namespace MyEngRusDictionaryService
         {
             if (helper.Open(filePath: helper.PathToFile))
             {
-                Console.BackgroundColor = ConsoleColor.Cyan;
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                Console.Clear();
                 Menu();
             }
             else
@@ -31,45 +28,49 @@ namespace MyEngRusDictionaryService
         }
         private void Menu()
         {
-            Console.WriteLine("1. Enter '1' to see the dictionary");
-            Console.WriteLine("2. Enter '2' to take the 'From Eng to Rus' test");
-            Console.WriteLine("3. Enter '3' to take the 'From Rus to Eng' test");
-            Console.WriteLine("4. Enter '4' to add the word to the dictionary");
-            Console.WriteLine("5. Enter '5' to see the dictionary in order of test results");
-            Console.WriteLine("0. Enter '0' to quit the program");
-            Console.WriteLine();
-            
-            Int32.TryParse(Console.ReadLine(), out int choice);
-            Console.WriteLine();
+            Console.BackgroundColor = ConsoleColor.Cyan;
+            Console.Clear();
+            while (true)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.WriteLine("1. Enter '1' to see the dictionary");
+                Console.WriteLine("2. Enter '2' to take the 'From Eng to Rus' test");
+                Console.WriteLine("3. Enter '3' to take the 'From Rus to Eng' test");
+                Console.WriteLine("4. Enter '4' to add the word to the dictionary");
+                Console.WriteLine("5. Enter '5' to see the dictionary in order of test results");
+                Console.WriteLine("0. Enter '0' to quit the program");
+                Console.WriteLine();
 
-            switch (choice){
-                case 1:
-                    Show();
-                    Menu();
-                    break;
-                case 2:
-                    Test(0);
-                    Menu();
-                    break;
-                case 3:
-                    Test(1);
-                    Menu();
-                    break;
-                case 4:
-                    AddWord();
-                    Menu();
-                    break;
-                case 5:
-                    ShowResultsOrder();
-                    Menu();
-                    break;
-                case 0:
+
+                Int32.TryParse(Console.ReadLine(), out int choice);
+                Console.WriteLine();
+                if (choice == 0)
+                {
                     helper.Quit();
                     break;
-                default:
-                    Console.WriteLine("Incorrect number");
-                    Menu();
-                    break;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        Show();
+                        break;
+                    case 2:
+                        Test(0);
+                        break;
+                    case 3:
+                        Test(1);
+                        break;
+                    case 4:
+                        AddWord();
+                        break;
+                    case 5:
+                        ShowResultsOrder();
+                        break;
+                    default:
+                        Console.WriteLine("Incorrect number");
+                        break;
+                }
             }
         }
 
@@ -106,8 +107,6 @@ namespace MyEngRusDictionaryService
                 Console.WriteLine("Incorrect words");
                 AddWord();
             }
-
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
         }
 
         private void Show()
@@ -124,7 +123,6 @@ namespace MyEngRusDictionaryService
 
             Console.WriteLine();
             Console.WriteLine();
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
         }
 
         private void ShowResultsOrder()
@@ -147,7 +145,6 @@ namespace MyEngRusDictionaryService
 
             Console.WriteLine();
             Console.WriteLine();
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
         }
 
         private void Test(int lang)
@@ -258,14 +255,12 @@ namespace MyEngRusDictionaryService
                 string first = $"{i + 1}. {mistakes[i]}";
                 Console.WriteLine($"{first,-30}{corrections[i],-33}{wrongAnswers[i]}");
             }
-            Console.BackgroundColor = ConsoleColor.Cyan;
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
-            Console.WriteLine();
             #endregion
 
 
             Console.BackgroundColor = ConsoleColor.Cyan;
             Console.ForegroundColor = ConsoleColor.DarkBlue;
+            Console.WriteLine();
             Console.WriteLine("Enter the numbers of words that you treat as correct ones. To escape enter 0.");
             var correctionsOfWrong = new List<int>();
             int temp;
@@ -282,6 +277,8 @@ namespace MyEngRusDictionaryService
             while (temp != 0);
 
             helper.WordsInTestUpdate(indexesOfWordsInTest, indexesOfCorrectWords);
+            Console.WriteLine();
+            Console.WriteLine();
         }
     }
 }
